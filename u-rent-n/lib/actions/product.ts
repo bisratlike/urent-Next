@@ -4,6 +4,10 @@ import { products } from "@/drizzle/schema";
 import { eq, asc } from "drizzle-orm";
 import { Product } from './types';
 
+
+
+
+
 export async function createProduct(productData: Omit<Product, 'id'>) {
   try {
       console.log("Product Data:", productData);

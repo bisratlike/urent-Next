@@ -1,0 +1,473 @@
+--- File: app/layout.tsx ---
+import type { Metadata } from "next";
+
+import "./globals.css";
+
+
+import { MantineProvider } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
+import 'normalize.css/normalize.css';
+
+export const metadata: Metadata = {
+  title: "U-rent",
+  description: "",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <MantineProvider >
+          <Notifications />
+          {children}
+        </MantineProvider>
+      </body>
+    </html>
+  );
+}
+
+
+
+--- File: app/page.tsx ---
+import React from 'react';
+import {ThreeDCardDemo} from '../components/Card';
+import Header from '../components/Header';
+export default function Home() {
+  return (
+
+   <div>
+    <Header
+        title="U-rent"
+        navLinks={[
+          { href: '/products', label: 'Product' },
+          { href: '/cart', label: 'my Cart' },
+        ]}
+      />
+    <ThreeDCardDemo
+        picture="/codes.jpg"
+        price={100}
+        productName="Awesome Product"
+        description="hola hola hola "
+      />
+   </div>
+  );
+}
+
+
+--- File: app/cart/page.ts ---
+
+
+--- File: app/products/page.tsx ---
+import React from 'react';
+import { GetServerSideProps } from 'next';
+import { getProducts } from '@/lib/actions/product';
+import { Product } from '@/lib/actions/types';
+import { ThreeDCardDemo } from '@/components/Card';
+
+interface ProductsPageProps {
+  products: Product[];
+}
+
+const ProductsPage: React.FC<ProductsPageProps> = ({ products }) => {
+  return (
+    <div className="products-page">
+      <div className="products-grid">
+        {products.map((product) => (
+          <div key={product.id} className="product-card">
+            <ThreeDCardDemo
+              picture={product.picture || "/codes.jpg"}
+              price={typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0}
+              productName={product.name || "Unknown Product"}
+              description={product.description || "No description available"}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const rawProducts = await getProducts();
+
+  const products: Product[] = rawProducts.map((product) => ({
+    id: product.id,
+    name: product.name || "",
+    description: product.description || "",
+    price: typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0,
+    picture: product.picture || "/codes.jpg",
+    createdAt: product.createdAt || new Date(),
+    updatedAt: product.updatedAt || new Date(),
+  }));
+
+  return {
+    props: {
+      products,
+    },
+  };
+};
+
+export default ProductsPage;
+
+--- File: app/products/post/page.tsx ---
+"use client";
+import React from 'react';
+import { useForm } from '@mantine/form';
+import { TextInput, Textarea, NumberInput, Button, Container, Title, FileInput } from '@mantine/core';
+import { useState } from 'react';
+import { uploadImage } from '@/lib/actions/ImageHandler';
+import {createProduct} from '@/lib/actions/product';
+// import { Product } from '@/lib/actions/types';
+const AddProductPage = () => {
+    const [image, setImage] = useState<File | null>(null);
+    const form = useForm({
+        initialValues: {
+            name: '',
+            description: '',
+            price: 0,
+        },
+    });
+
+    const handleSubmit = async (values: typeof form.values) => {
+        if (!image) {
+            console.error('Image is required');
+            return;
+        }
+
+        try {
+            const imageUrl = await uploadImage(image);
+
+            
+            const productData = {
+                ...values,
+                picture: imageUrl,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+
+            console.log('Product added:', productData);
+            await createProduct(productData);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+        }
+    };
+
+    return (
+        <Container className="mt-10 p-6 bg-white rounded-lg shadow-md">
+            <Title order={2} className="mb-6 text-center">
+                Add New Product
+            </Title>
+            <form onSubmit={form.onSubmit(handleSubmit)}>
+                <TextInput
+                    label="Product Name"
+                    placeholder="Enter product name"
+                    {...form.getInputProps('name')}
+                    className="mb-4"
+                />
+                <Textarea
+                    label="Description"
+                    placeholder="Enter product description"
+                    {...form.getInputProps('description')}
+                    className="mb-4"
+                />
+                <NumberInput
+                    label="Price"
+                    placeholder="Enter product price"
+                    {...form.getInputProps('price')}
+                    className="mb-4"
+                />
+                <FileInput
+                    label="Product Image"
+                    placeholder="Upload product image"
+                    onChange={setImage}
+                    className="mb-4"
+                />
+                <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600">
+                    Add Product
+                </Button>
+            </form>
+        </Container>
+    );
+};
+
+export default AddProductPage;
+
+--- File: components/Card.tsx ---
+"use client";
+
+import Image from "next/image";
+import React from "react";
+import { CardBody, CardContainer, CardItem } from "./ui/3d-card";
+import Link from "next/link";
+
+interface ThreeDCardDemoProps {
+  picture: string;
+  price: number;
+  productName: string;
+  description: string;
+}
+
+export function ThreeDCardDemo({ picture, price, productName, description }: ThreeDCardDemoProps) {
+  return (
+    <CardContainer className="inter-var">
+      <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[30rem] h-auto rounded-xl p-6 border">
+        <Image src={picture} alt={productName} width={300} height={200} className="rounded-xl" />
+        <CardItem
+          translateZ="50"
+          className="text-xl font-bold text-neutral-600 dark:text-white mt-4"
+        >
+          {productName}
+        </CardItem>
+        <CardItem
+          as="p"
+          translateZ="60"
+          className="text-neutral-500 text-sm max-w-sm mt-2 dark:text-neutral-300"
+        >
+          {description}
+        </CardItem>
+        <CardItem
+          as="p"
+          translateZ="60"
+          className="text-neutral-500 text-sm max-w-sm mt-2 dark:text-neutral-300"
+        >
+          {price}
+        </CardItem>
+        <CardItem
+          as="button"
+          translateZ="70"
+          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+        >
+          Add to Cart
+        </CardItem>
+      </CardBody>
+    </CardContainer>
+  );
+}
+
+--- File: components/Header.tsx ---
+import React from 'react';
+import Link from 'next/link';
+import { Text, Group, Anchor } from '@mantine/core';
+
+interface HeaderProps {
+  title: string;
+  navLinks?: { href: string; label: string }[];
+}
+
+const Header: React.FC<HeaderProps> = ({ title, navLinks }) => {
+  return (
+    <div
+      style={{
+        backgroundColor: '#6c5ce7',
+        padding: '1rem',
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      <Text c="white" fw={700} size="xl">
+        {title}
+      </Text>
+
+      <Group spacing="md">
+        {navLinks &&
+          navLinks.map((link) => (
+            <Anchor
+              key={link.href}
+              component={Link}
+              href={link.href}
+              c="white"
+              fw={500}
+              style={{ textDecoration: 'none' }}
+            >
+              {link.label}
+            </Anchor>
+          ))}
+      </Group>
+    </div>
+  );
+};
+
+export default Header;
+
+--- File: components/ui/3d-card.tsx ---
+"use client";
+
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useRef,
+  useEffect,
+} from "react";
+
+const MouseEnterContext = createContext<
+  [boolean, React.Dispatch<React.SetStateAction<boolean>>] | undefined
+>(undefined);
+
+export const CardContainer = ({
+  children,
+  className,
+  containerClassName,
+}: {
+  children?: React.ReactNode;
+  className?: string;
+  containerClassName?: string;
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isMouseEntered, setIsMouseEntered] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const { left, top, width, height } =
+      containerRef.current.getBoundingClientRect();
+    const x = (e.clientX - left - width / 2) / 25;
+    const y = (e.clientY - top - height / 2) / 25;
+    containerRef.current.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+  };
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsMouseEntered(true);
+    if (!containerRef.current) return;
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    setIsMouseEntered(false);
+    containerRef.current.style.transform = `rotateY(0deg) rotateX(0deg)`;
+  };
+  return (
+    <MouseEnterContext.Provider value={[isMouseEntered, setIsMouseEntered]}>
+      <div
+        className={cn(
+          "py-20 flex items-center justify-center",
+          containerClassName
+        )}
+        style={{
+          perspective: "1000px",
+        }}
+      >
+        <div
+          ref={containerRef}
+          onMouseEnter={handleMouseEnter}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          className={cn(
+            "flex items-center justify-center relative transition-all duration-200 ease-linear",
+            className
+          )}
+          style={{
+            transformStyle: "preserve-3d",
+          }}
+        >
+          {children}
+        </div>
+      </div>
+    </MouseEnterContext.Provider>
+  );
+};
+
+export const CardBody = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  return (
+    <div
+      className={cn(
+        "h-96 w-96 [transform-style:preserve-3d]  [&>*]:[transform-style:preserve-3d]",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+};
+
+export const CardItem = ({
+  as: Tag = "div",
+  children,
+  className,
+  translateX = 0,
+  translateY = 0,
+  translateZ = 0,
+  rotateX = 0,
+  rotateY = 0,
+  rotateZ = 0,
+  ...rest
+}: {
+  as?: React.ElementType;
+  children: React.ReactNode;
+  className?: string;
+  translateX?: number | string;
+  translateY?: number | string;
+  translateZ?: number | string;
+  rotateX?: number | string;
+  rotateY?: number | string;
+  rotateZ?: number | string;
+  [key: string]: any;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isMouseEntered] = useMouseEnter();
+
+  useEffect(() => {
+    handleAnimations();
+  }, [isMouseEntered]);
+
+  const handleAnimations = () => {
+    if (!ref.current) return;
+    if (isMouseEntered) {
+      ref.current.style.transform = `translateX(${translateX}px) translateY(${translateY}px) translateZ(${translateZ}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg)`;
+    } else {
+      ref.current.style.transform = `translateX(0px) translateY(0px) translateZ(0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg)`;
+    }
+  };
+
+  return (
+    <Tag
+      ref={ref}
+      className={cn("w-fit transition duration-200 ease-linear", className)}
+      {...rest}
+    >
+      {children}
+    </Tag>
+  );
+};
+
+// Create a hook to use the context
+export const useMouseEnter = () => {
+  const context = useContext(MouseEnterContext);
+  if (context === undefined) {
+    throw new Error("useMouseEnter must be used within a MouseEnterProvider");
+  }
+  return context;
+};
+
+
+--- File: drizzle/db.ts ---
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import * as schema from "./schema";
+const client = postgres(process.env.DATABASE_URL!);
+export const db = drizzle(client, { schema });
+
+--- File: drizzle/schema.ts ---
+import { pgTable, serial, text, numeric,timestamp } from "drizzle-orm/pg-core";
+
+export const products = pgTable("products", {
+    id: serial("id").primaryKey(),
+    name: text("name"),
+    description: text("description"),
+    price: numeric("price"),
+    picture: text("picture"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow()
+});
+

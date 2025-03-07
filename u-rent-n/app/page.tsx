@@ -14,7 +14,7 @@ export default function Home() {
       />
     <ThreeDCardDemo
         picture="/codes.jpg"
-        price="$99.99"
+        price={100}
         productName="Awesome Product"
         description="hola hola hola "
       />
