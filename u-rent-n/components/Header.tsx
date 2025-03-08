@@ -1,3 +1,4 @@
+// components/Header.tsx
 import React from 'react';
 import Link from 'next/link';
 import { Text, Group, Anchor } from '@mantine/core';
@@ -5,9 +6,10 @@ import { Text, Group, Anchor } from '@mantine/core';
 interface HeaderProps {
   title: string;
   navLinks?: { href: string; label: string }[];
+  totalPrice?: number;
 }
 
-const Header: React.FC<HeaderProps> = ({ title, navLinks }) => {
+const Header: React.FC<HeaderProps> = ({ title, navLinks, totalPrice }) => {
   return (
     <div
       style={{
@@ -24,19 +26,23 @@ const Header: React.FC<HeaderProps> = ({ title, navLinks }) => {
       </Text>
 
       <Group spacing="md">
-        {navLinks &&
-          navLinks.map((link) => (
-            <Anchor
-              key={link.href}
-              component={Link}
-              href={link.href}
-              c="white"
-              fw={500}
-              style={{ textDecoration: 'none' }}
-            >
-              {link.label}
-            </Anchor>
-          ))}
+        {navLinks?.map((link) => (
+          <Anchor
+            key={link.href}
+            component={Link}
+            href={link.href}
+            c="white"
+            fw={500}
+            style={{ textDecoration: 'none' }}
+          >
+            {link.label}
+          </Anchor>
+        ))}
+        {totalPrice !== undefined && (
+          <Text c="white" fw={500}>
+            Total: ${totalPrice.toFixed(2)}
+          </Text>
+        )}
       </Group>
     </div>
   );

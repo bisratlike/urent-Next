@@ -3,9 +3,9 @@ import { v2 as cloudinary } from "cloudinary";
 
 // Configure with environment variables
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: process.env.cloud_name,
+  api_key: process.env.Api_key,
+  api_secret: process.env.Api_secret,
 });
 
 export async function uploadImage(file: File) {
