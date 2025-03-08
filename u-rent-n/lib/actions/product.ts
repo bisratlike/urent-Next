@@ -4,7 +4,7 @@ import { products } from "@/drizzle/schema";
 import { eq, asc } from "drizzle-orm";
 import { Product } from './types';
 
-
+import { revalidatePath } from 'next/cache';
 
 
 
@@ -18,7 +18,8 @@ export async function createProduct(productData: Omit<Product, 'id'>) {
           price: productData.price,
           picture: productData.picture,
       }).returning();
-
+      
+      revalidatePath('/products');
       console.log("New Product:", newProduct);
       return newProduct;
   } catch (error) {
@@ -44,5 +45,17 @@ export async function getProductById(productId: number) {
     } catch (error) {
         console.error("Error fetching product:", error);
         throw new Error("Failed to fetch product");
+    }
+  }
+
+  export async function deleteProduct(productId: number) {
+    try {
+      await db.delete(products).where(eq(products.id, productId));
+      revalidatePath('/products');
+      
+      return { success: true };
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      throw new Error("Failed to delete product");
     }
   }

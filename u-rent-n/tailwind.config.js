@@ -6,7 +6,13 @@ module.exports = {
     "./node_modules/@mantine/core/**/*.{js}", // Adjusted for consistency
   ],
   theme: {
-    extend: {},
+    extend: {
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+      }
+    },
   },
-  plugins: [],
+  plugins: [
+     '@tailwindcss/line-clamp',
+  ],
 };

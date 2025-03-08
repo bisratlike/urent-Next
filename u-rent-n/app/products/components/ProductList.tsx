@@ -10,24 +10,24 @@ interface ProductsListProps {
   products: Product[];
 }
 
-// app/products/components/ProductList.tsx
-
-
 const ProductsList = ({ products }: ProductsListProps) => {
   const { addToCart } = useCart();
 
   return (
-    <div className="products-page">
-      <div className="products-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="products-page p-4 md:p-8">
+      <div className="products-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
         {products.map((product) => (
-          <div key={product.id} className="product-card">
+          <div key={product.id} className="w-full h-full">
             <ThreeDCardDemo
-              picture={product.picture}
-              price={product.price}
-              productName={product.name}
-              description={product.description}
+              picture={product.picture || "/codes.jpg"}
+              price={product.price || 0}
+              productName={product.name || "Unnamed Product"}
+              description={product.description || "No description available"}
               onAddToCart={() => addToCart({
-                ...product,
+                id: product.id,
+                name: product.name || "Unnamed Product",
+                price: Number(product.price) || 0,
+                picture: product.picture || "/default-image.jpg",
                 quantity: 1
               })}
             />

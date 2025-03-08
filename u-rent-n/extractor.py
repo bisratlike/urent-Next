@@ -20,7 +20,7 @@ def write_files_to_output(files, output_file):
                 output.write(f"Error reading file: {e}\n")
             output.write("\n\n")
 
-directories = ['app', 'components', 'drizzle']
+directories = ['app', 'components', 'drizzle',"context","lib"]
 all_ts_files = []
 
 for directory in directories:

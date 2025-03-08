@@ -1,8 +1,9 @@
-// File: app/products/page.tsx
+
 import React from 'react';
 import { getProducts } from '@/lib/actions/product';
 import { Product } from '@/lib/actions/types';
 import ProductsList from './components/ProductList';
+import ClientHeader from '@/components/ClientHeader';
 
 const ProductsPage = async () => {
   const rawProducts = await getProducts();
@@ -17,7 +18,12 @@ const ProductsPage = async () => {
     updatedAt: product.updatedAt || new Date(),
   }));
 
-  return <ProductsList products={products} />;
+  return (
+    <div>
+      
+      <ProductsList products={products} />
+    </div>
+  );
 };
 
 export default ProductsPage;

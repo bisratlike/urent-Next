@@ -12,14 +12,15 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ title, navLinks, totalPrice }) => {
   return (
     <div
-      style={{
-        backgroundColor: '#6c5ce7',
-        padding: '1rem',
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
+    style={{
+      backgroundColor: '#228be6', // New blue color
+      padding: '1rem',
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    }}
     >
       <Text c="white" fw={700} size="xl">
         {title}

@@ -12,7 +12,9 @@ const ClientHeader = () => {
       title="U-rent"
       navLinks={[
         { href: '/products', label: 'Product' },
-        { href: '/cart', label: `My Cart (${totalItems})` },
+        
+        { href: '/manage', label: 'Manage' },
+        { href: '/cart', label: `My Cart ` },
       ]}
       totalPrice={totalPrice}
     />
